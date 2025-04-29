@@ -319,3 +319,25 @@ Resources:
      Tags:
        - Key: Name
          Value: ecomm-db-sg
+  # Web Instance
+ ecommwebInstance:
+   Type: 'AWS::EC2::Instance'
+   Properties:
+     ImageId: ami-0fbbcfb8985f9a341
+     InstanceType: t2.micro
+     KeyName: mykeypair
+     SubnetId:
+       Ref: ecommwebSubnet
+     SecurityGroupIds:
+       - Ref: ecommwebInstanceSecurityGroup
+     UserData:
+       Fn::Base64: !Sub |
+         #!/bin/bash
+         yum update -y
+         yum install httpd git -y
+         systemctl start httpd
+         systemctl enable httpd
+         git clone https://github.com/ravi2krishna/ecomm.git /var/www/html
+     Tags:
+       - Key: Name
+         Value: ecomm-web-server 
