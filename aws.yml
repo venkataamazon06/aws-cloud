@@ -22,3 +22,49 @@ Resources:
      Tags:
      - Key: Name
        Value: ecomm-web-subnet
+  # App Subnet         
+ ecommappSubnet:
+   Type: AWS::EC2::Subnet
+   Properties:
+     VpcId: !Ref ecommVPC
+     CidrBlock: 10.0.1.0/24
+     AvailabilityZone: "eu-west-2a"
+     MapPublicIpOnLaunch: "true"
+     Tags:
+     - Key: Name
+       Value: ecomm-app-subnet
+ # DB Subnet         
+ ecommdbSubnet:
+   Type: AWS::EC2::Subnet
+   Properties:
+     VpcId: !Ref ecommVPC
+     CidrBlock: 10.0.2.0/24
+     AvailabilityZone: "eu-west-2a"
+     MapPublicIpOnLaunch: "false"
+     Tags:
+     - Key: Name
+       Value: ecomm-db-subnet
+ # Internet Gateway
+ ecommInternetGateway:
+   Type: AWS::EC2::InternetGateway
+   Properties:
+     Tags:
+     - Key: Name
+       Value: ecomm-igw
+  # Attach Internet Gateway     
+ ecommAttachGateway:
+   Type: AWS::EC2::VPCGatewayAttachment
+   Properties:
+     VpcId:
+       Ref: ecommVPC
+     InternetGatewayId:
+       Ref: ecommInternetGateway
+  # Public Route Table
+ ecommpubRouteTable:
+   Type: AWS::EC2::RouteTable
+   Properties:
+     VpcId: 
+       Ref: ecommVPC
+     Tags:
+     - Key: Name
+       Value: ecomm-pub-rt
