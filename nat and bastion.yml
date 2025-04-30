@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Ecomm Infrastructure
+Resources:
+ # VPC
+ ecommVPC:
+   Type: AWS::EC2::VPC
+   Properties:
+     CidrBlock: 10.0.0.0/16
+     EnableDnsSupport: 'true'
+     EnableDnsHostnames: 'true'
+     Tags:
+       - Key: Name
+         Value: ecomm-vpc
+ # Web Subnet         
+ ecommwebSubnet:
+   Type: AWS::EC2::Subnet
+   Properties:
+     VpcId: !Ref ecommVPC
+     CidrBlock: 10.0.0.0/24
+     AvailabilityZone: "eu-west-2a"
+     MapPublicIpOnLaunch: "true"
+     Tags:
+     - Key: Name
+       Value: ecomm-web-subnet
+  # App Subnet         
+ ecommappSubnet:
+   Type: AWS::EC2::Subnet
+   Properties:
+     VpcId: !Ref ecommVPC
+     CidrBlock: 10.0.1.0/24
+     AvailabilityZone: "eu-west-2a"
+     MapPublicIpOnLaunch: "true"
+     Tags:
+     - Key: Name
+       Value: ecomm-app-subnet
+ # DB Subnet         
+ ecommdbSubnet:
+   Type: AWS::EC2::Subnet
+   Properties:
+     VpcId: !Ref ecommVPC
+     CidrBlock: 10.0.2.0/24
+     AvailabilityZone: "eu-west-2a"
+     MapPublicIpOnLaunch: "false"
+     Tags:
+     - Key: Name
+       Value: ecomm-db-subnet
+ # Internet Gateway
+ ecommInternetGateway:
+   Type: AWS::EC2::InternetGateway
+   Properties:
+     Tags:
+     - Key: Name
+       Value: ecomm-igw
+  # Attach Internet Gateway     
+ ecommAttachGateway:
+   Type: AWS::EC2::VPCGatewayAttachment
+   Properties:
+     VpcId:
+       Ref: ecommVPC
+     InternetGatewayId:
+       Ref: ecommInternetGateway
+  # Public Route Table
+ ecommpubRouteTable:
+   Type: AWS::EC2::RouteTable
+   Properties:
+     VpcId: 
+       Ref: ecommVPC
+     Tags:
+     - Key: Name
+       Value: ecomm-pub-rt
+  # Internet Route
+ myRoute:
+   Type: AWS::EC2::Route
+   DependsOn: ecommAttachGateway
+   Properties:
+      RouteTableId:
+        Ref: ecommpubRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: ecommInternetGateway
+  
+ # RT - Subnet Association
+ ecommwebSubnetRouteTableAssociation:
+   Type: AWS::EC2::SubnetRouteTableAssociation
+   Properties:
+     SubnetId:
+       Ref: ecommwebSubnet
+     RouteTableId:
+       Ref: ecommpubRouteTable
+
+
+ # RT - Subnet Association
+ ecommappSubnetRouteTableAssociation:
+   Type: AWS::EC2::SubnetRouteTableAssociation
+   Properties:
+     SubnetId:
+       Ref: ecommappSubnet
+     RouteTableId:
+       Ref: ecommpubRouteTable
+  # Private Route Table
+ ecommpvtRouteTable:
+   Type: AWS::EC2::RouteTable
+   Properties:
+     VpcId: 
+       Ref: ecommVPC
+     Tags:
+     - Key: Name
+       Value: ecomm-pvt-rt
+
+
+ # RT - Subnet Association
+ ecommdbSubnetRouteTableAssociation:
+   Type: AWS::EC2::SubnetRouteTableAssociation
+   Properties:
+     SubnetId:
+       Ref: ecommdbSubnet
+     RouteTableId:
+       Ref: ecommpvtRouteTable
+  # RT - Subnet Association
+ ecommwebNetworkAcl:
+   Type: AWS::EC2::NetworkAcl
+   Properties:
+     VpcId:
+       Ref: ecommVPC
+     Tags:
+       - Key: Name
+         Value: ecomm-web-nacl
+   # bastion Subnet         
+ ecommbastionSubnet:
+   Type: AWS::EC2::Subnet
+   Properties:
+     VpcId: !Ref ecommVPC
+     CidrBlock: 10.0.3.0/24
+     AvailabilityZone: "eu-west-2a"
+     MapPublicIpOnLaunch: "true"
+     Tags:
+     - Key: Name
+       Value: ecomm-bastion-subnet
+  # RT - Subnet Association
+ ecommbastionSubnetRouteTableAssociation:
+   Type: AWS::EC2::SubnetRouteTableAssociation
+   Properties:
+     SubnetId:
+       Ref: ecommbastionSubnet
+     RouteTableId:
+       Ref: ecommpubRouteTable
